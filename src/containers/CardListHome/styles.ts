@@ -10,4 +10,15 @@ export const CardListContainer = styled.div`
   row-gap: 48px;
 
   background-color: ${theme.Colors.background};
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    grid-template-columns: 1fr 1fr;
+    padding: 32px 16px;
+  }
+
+  @media (max-width: ${theme.breakpoints.mobile}) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
 `

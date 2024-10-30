@@ -3,9 +3,7 @@ import { PiTrash } from 'react-icons/pi'
 
 import { remove } from '../../../store/reducers/cart'
 import { RootReducer } from '../../../store'
-
-import { formatPrice } from '../../../utils'
-
+import { formatPrice, getTotalPrice } from '../../../utils'
 import Button from '../../../components/Button'
 
 import * as S from '../styles'
@@ -18,6 +16,8 @@ const Products = ({ handleClick }: ProductsProps) => {
   const { items } = useSelector((state: RootReducer) => state.cart)
   const dispatch = useDispatch()
 
+  const totalPrice = getTotalPrice(items)
+
   function handleRemoveItem(id: number) {
     dispatch(remove(id))
   }
@@ -26,19 +26,15 @@ const Products = ({ handleClick }: ProductsProps) => {
     return products.map((product) => (
       <S.CartItem key={product.id}>
         <img src={product.foto} alt={product.nome} />
+
         <div>
           <S.Title>{product.nome}</S.Title>
           <S.Price>{formatPrice(product.preco)}</S.Price>
         </div>
+
         <PiTrash fill="#E66767" onClick={() => handleRemoveItem(product.id)} />
       </S.CartItem>
     ))
-  }
-
-  function getTotalPrice() {
-    return items.reduce((prevValue, currentvalue) => {
-      return (prevValue += currentvalue.preco!)
-    }, 0)
   }
 
   return (
@@ -46,9 +42,10 @@ const Products = ({ handleClick }: ProductsProps) => {
       {items.length > 0 ? (
         <>
           {RenderCartItem(items)}
+
           <S.TotalContainer>
             <S.Text>Valor total</S.Text>
-            <S.Text>{formatPrice(getTotalPrice())}</S.Text>
+            <S.Text>{formatPrice(totalPrice)}</S.Text>
           </S.TotalContainer>
 
           <Button

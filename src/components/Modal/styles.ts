@@ -1,17 +1,13 @@
 import styled from 'styled-components'
 import theme from '../../global/theme'
 
-type ModalContainerProps = {
-  isOpen: boolean
-}
-
-export const ModalContainer = styled.div<ModalContainerProps>`
+export const ModalContainer = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  display: ${(props) => (props.isOpen === true ? 'flex' : 'none')};
+  display: ${({ $isOpen }) => ($isOpen ? 'flex' : 'none')};
   justify-content: center;
   z-index: 2;
 `
@@ -46,6 +42,16 @@ export const ModalContent = styled.div`
     right: 8px;
     cursor: pointer;
   }
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    width: 90%;
+  }
+
+  @media (max-width: ${theme.breakpoints.mobile}) {
+    flex-direction: column;
+    margin-top: 0;
+    top: 60px;
+  }
 `
 
 export const ContainerImage = styled.div`
@@ -56,6 +62,10 @@ export const ContainerImage = styled.div`
     width: 100%;
     height: 280px;
     object-fit: cover;
+  }
+
+  @media (max-width: ${theme.breakpoints.mobile}) {
+    max-width: 100%;
   }
 `
 

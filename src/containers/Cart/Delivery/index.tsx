@@ -1,14 +1,16 @@
-import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { Navigate } from 'react-router-dom'
-import { useFormik } from 'formik'
-import * as Yup from 'yup'
-import InputMask from 'react-input-mask'
 
 import { RootReducer } from '../../../store'
+import { close, clear } from '../../../store/reducers/cart'
+import { usePurchaseMutation } from '../../../services/api'
+import { formatPrice, getTotalPrice } from '../../../utils/index'
 
-import Payment from '../Payment'
+import OrderForm from './OrderForm'
+import OrderSuccess from './OrderSuccess'
 import Button from '../../../components/Button'
+
 import * as S from '../styles'
 
 type DeliveryProps = {
@@ -16,149 +18,127 @@ type DeliveryProps = {
 }
 
 const Delivery = ({ handleClick }: DeliveryProps) => {
-  const [finalizePayment, setFinalizePayment] = useState(false)
+  const [nextStep, setNextStep] = useState(false)
+  const [showOrderSuccess, setShowOrderSuccess] = useState(false)
 
+  const [purchase, { data, isSuccess }] = usePurchaseMutation()
   const { items } = useSelector((state: RootReducer) => state.cart)
+  const dispatch = useDispatch()
 
-  const form = useFormik({
-    initialValues: {
-      fullName: '',
-      address: '',
-      city: '',
-      zipCode: '',
-      number: '',
-      complement: ''
-    },
-    validationSchema: Yup.object({
-      fullName: Yup.string()
-        .min(5, 'O nome precisa ter pelo menos 5 caracteres')
-        .required('O campo é obrigatório'),
-      address: Yup.string().required('O campo é obrigatório'),
-      city: Yup.string().required('O campo é obrigatório'),
-      zipCode: Yup.string()
-        .min(8, 'O nome precisa ter pelo menos 8 caracteres')
-        .max(8, 'O campo precisa ter pelo menos 8 caracteres')
-        .required('O campo é obrigatório'),
-      number: Yup.string().required('O campo é obrigatório')
-    }),
-    onSubmit: () => {}
-  })
+  const TotalPrice = getTotalPrice(items)
 
-  const checkInputHasError = (fiedlName: string) => {
-    const isTouched = fiedlName in form.touched
-    const isInvalid = fiedlName in form.errors
-    const hasError = isTouched && isInvalid
+  useEffect(() => {
+    if (isSuccess) {
+      dispatch(clear())
+    }
+  }, [isSuccess, dispatch])
 
-    return hasError
+  function closeCart() {
+    dispatch(close())
+    setShowOrderSuccess(false)
+    window.location.href = '/'
   }
 
-  // if (items.length === 0 && !isSuccess)
-  if (items.length === 0) {
+  function handleSubmitOrder(item: DeliveryDataProps) {
+    const mountObject: PurchasePayloadProps = {
+      products: items.map((item) => ({
+        id: item.id,
+        price: item.preco
+      })),
+      delivery: {
+        receiver: item.receiver,
+        address: {
+          description: item.address.description,
+          city: item.address.city,
+          zipCode: item.address.zipCode,
+          number: item.address.number,
+          complement: item.address.complement
+        }
+      },
+      payment: {
+        card: {
+          name: item.payment.name,
+          number: item.payment.cardNumber,
+          code: item.payment.code,
+          expires: {
+            month: item.payment.expires.month,
+            year: item.payment.expires.year
+          }
+        }
+      }
+    }
+
+    purchase(mountObject)
+    setShowOrderSuccess(true)
+  }
+
+  function renderFormSubTitle() {
+    if (nextStep) {
+      return (
+        <S.SubTitle>
+          Pagamento - Valor a pagar ${formatPrice(TotalPrice)}
+        </S.SubTitle>
+      )
+    }
+
+    return <S.SubTitle>Entrega</S.SubTitle>
+  }
+
+  function renderBackButtons() {
+    if (nextStep) {
+      return (
+        <Button
+          placeholder="Voltar para a edição de endereço"
+          displayMode="fullWidth"
+          themeMode="second"
+          kind="button"
+          onClick={() => setNextStep(false)}
+        />
+      )
+    }
+
+    return (
+      <>
+        <Button
+          placeholder="Continuar com o pagamento"
+          displayMode="fullWidth"
+          themeMode="second"
+          kind="button"
+          onClick={() => setNextStep(true)}
+        />
+
+        <Button
+          placeholder="Voltar para o carrinho"
+          displayMode="fullWidth"
+          themeMode="second"
+          kind="button"
+          onClick={handleClick}
+        />
+      </>
+    )
+  }
+
+  if (items.length === 0 && !isSuccess) {
     return <Navigate to="/" />
   }
 
   return (
-    <>
-      {!finalizePayment ? (
-        <S.Sidebar>
-          <S.SubTitle>Entrega</S.SubTitle>
-          <form onSubmit={form.handleSubmit}>
-            <S.FormContainer>
-              <S.InputGroup>
-                <label htmlFor="fullName">Quem irá receber</label>
-                <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  value={form.values.fullName}
-                  onChange={form.handleChange}
-                  onBlur={form.handleBlur}
-                  className={checkInputHasError('fullName') ? 'error' : ''}
-                />
-              </S.InputGroup>
-              <S.InputGroup>
-                <label htmlFor="address">Endereço</label>
-                <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  value={form.values.address}
-                  onChange={form.handleChange}
-                  onBlur={form.handleBlur}
-                  className={checkInputHasError('address') ? 'error' : ''}
-                />
-              </S.InputGroup>
-              <S.InputGroup>
-                <label htmlFor="city">Cidade</label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={form.values.city}
-                  onChange={form.handleChange}
-                  onBlur={form.handleBlur}
-                  className={checkInputHasError('city') ? 'error' : ''}
-                />
-              </S.InputGroup>
-              <S.InputContainer>
-                <S.InputGroup>
-                  <label htmlFor="zipCode">CEP</label>
-                  <InputMask
-                    type="text"
-                    id="zipCode"
-                    name="zipCode"
-                    value={form.values.zipCode}
-                    onChange={form.handleChange}
-                    mask="99999-999"
-                    onBlur={form.handleBlur}
-                    className={checkInputHasError('zipCode') ? 'error' : ''}
-                  />
-                </S.InputGroup>
-                <S.InputGroup>
-                  <label htmlFor="number">Número</label>
-                  <input
-                    type="text"
-                    id="number"
-                    name="number"
-                    value={form.values.number}
-                    onChange={form.handleChange}
-                    onBlur={form.handleBlur}
-                    className={checkInputHasError('number') ? 'error' : ''}
-                  />
-                </S.InputGroup>
-              </S.InputContainer>
-              <S.InputGroup>
-                <label htmlFor="complement">Complemento (opcional)</label>
-                <input
-                  type="text"
-                  id="complement"
-                  name="complement"
-                  value={form.values.complement}
-                  onChange={form.handleChange}
-                />
-              </S.InputGroup>
-              <Button
-                placeholder="Continuar com o pagamento"
-                displayMode="fullWidth"
-                themeMode="second"
-                kind="button"
-                onClick={() => setFinalizePayment(true)}
-              />
-            </S.FormContainer>
-          </form>
-
-          <Button
-            placeholder="Voltar para o carrinho"
-            displayMode="fullWidth"
-            themeMode="second"
-            kind="button"
-            onClick={handleClick}
-          />
-        </S.Sidebar>
+    <S.Sidebar>
+      {showOrderSuccess && data ? (
+        <OrderSuccess orderId={data.orderId} handleClick={closeCart} />
       ) : (
-        <Payment handleClick={() => setFinalizePayment(false)} />
+        <>
+          {renderFormSubTitle()}
+
+          <OrderForm
+            showNextForm={nextStep}
+            handleClick={(item) => handleSubmitOrder(item)}
+          />
+
+          {renderBackButtons()}
+        </>
       )}
-    </>
+    </S.Sidebar>
   )
 }
 

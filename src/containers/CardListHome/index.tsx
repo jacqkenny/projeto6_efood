@@ -3,8 +3,8 @@ import { getDescription } from '../../utils'
 
 import Card from '../../components/Card'
 
-import { CardListContainer } from './styles'
 import Star from '../../assets/icons/star.svg'
+import { CardListContainer } from './styles'
 
 const CardListHome = () => {
   const { data } = useGetFeaturedRestaurantsQuery()
@@ -14,7 +14,7 @@ const CardListHome = () => {
   return (
     <CardListContainer>
       {data.map((item: RestaurantsDataProps) => (
-        <>
+        <div key={item.id}>
           <Card
             key={item.id}
             card="primary"
@@ -29,7 +29,7 @@ const CardListHome = () => {
             tagHighlight={item.destacado}
             cover={item.capa}
           />
-        </>
+        </div>
       ))}
     </CardListContainer>
   )

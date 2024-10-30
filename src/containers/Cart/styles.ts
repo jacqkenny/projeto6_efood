@@ -2,15 +2,11 @@ import styled from 'styled-components'
 import theme from '../../global/theme'
 import { ButtonContainer } from '../../components/Button/styles'
 
-type CartContainerProps = {
-  isOpen: boolean
-}
-
 type InputGroupProps = {
   maxWidth?: string
 }
 
-export const CartContainer = styled.div<CartContainerProps>`
+export const CartContainer = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
@@ -18,7 +14,7 @@ export const CartContainer = styled.div<CartContainerProps>`
   height: 100%;
   justify-content: flex-end;
   z-index: 3;
-  display: ${(props) => (props.isOpen === true ? 'flex' : 'none')};
+  display: ${({ $isOpen }) => ($isOpen ? 'flex' : 'none')};
 `
 
 export const Overlay = styled.div`
@@ -36,6 +32,10 @@ export const Sidebar = styled.aside`
   padding: 32px 8px;
   background-color: ${theme.Colors.text};
   z-index: 3;
+
+  ${ButtonContainer} {
+    margin-top: 8px;
+  }
 `
 
 export const CartItem = styled.li`
@@ -96,12 +96,12 @@ export const Text = styled.p`
   color: ${theme.Colors.primary};
 `
 
-export const FormContainer = styled.form`
+export const FormContainer = styled.div`
   margin-bottom: 8px;
+`
 
-  ${ButtonContainer} {
-    margin-top: 24px;
-  }
+export const ContainerButton = styled.div`
+  margin-top: 24px;
 `
 
 export const InputGroup = styled.div<InputGroupProps>`
@@ -125,6 +125,7 @@ export const InputGroup = styled.div<InputGroupProps>`
 
     &.error {
       border: 1px solid red;
+      color: red;
     }
   }
 `

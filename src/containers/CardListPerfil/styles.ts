@@ -32,6 +32,10 @@ export const BannerContainer = styled.div`
     position: relative;
     z-index: 1;
   }
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    padding: 25px 16px 32px;
+  }
 `
 
 export const CardListContainer = styled.div`
@@ -43,6 +47,16 @@ export const CardListContainer = styled.div`
   row-gap: 40px;
 
   background-color: ${theme.Colors.background};
+
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    grid-template-columns: 1fr 1fr;
+    padding: 32px 16px;
+  }
+
+  @media (max-width: ${theme.breakpoints.mobile}) {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
 `
 
 export const Title = styled.h1`

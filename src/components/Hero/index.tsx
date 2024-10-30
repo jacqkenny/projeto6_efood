@@ -1,8 +1,10 @@
 import { useDispatch, useSelector } from 'react-redux'
+
 import { RootReducer } from '../../store'
 import { open } from '../../store/reducers/cart'
-
 import Logo from '../Logo'
+
+import { Container } from '../../global/globalStyle'
 
 import {
   HeroContainer,
@@ -12,8 +14,6 @@ import {
   Title,
   TitleLink
 } from './styles'
-import { Container } from '../../global/globalStyle'
-import LogoImage from '../../assets/logo.png'
 
 type HeroProps = {
   title?: string
@@ -29,25 +29,38 @@ const Hero = ({ textContent, title }: HeroProps) => {
   }
 
   function renderHeaderContent(item: string | undefined) {
-    if (item && item !== undefined) {
+    if (item === undefined) {
       return (
-        <>
-          <TitleLink to="/">{item}</TitleLink>
-          <Logo kind="link" cover={LogoImage} title="Logo eFood" to="/" />
-          <Title onClick={handleOpenCart}>
-            {items.length} produto(s) no carrinho
-          </Title>
-        </>
+        <Logo
+          kind="link"
+          cover="https://raw.githubusercontent.com/BrunoOliveira16/Curso-Engenheiro-Front-End-EBAC/main/Modulo-35/ImagesEfood/logo.png"
+          title="Logo eFood"
+          to="/"
+        />
       )
     }
 
-    return <Logo kind="link" cover={LogoImage} title="Logo eFood" to="/" />
+    return (
+      <HeroHeader>
+        <TitleLink to="/">{item}</TitleLink>
+        <Logo
+          kind="link"
+          cover="https://raw.githubusercontent.com/BrunoOliveira16/Curso-Engenheiro-Front-End-EBAC/main/Modulo-35/ImagesEfood/logo.png"
+          title="Logo eFood"
+          to="/"
+        />
+        <Title onClick={handleOpenCart}>
+          {items.length} produto(s) no carrinho
+        </Title>
+      </HeroHeader>
+    )
   }
 
   return (
     <HeroContainer>
       <Container>
-        <HeroHeader>{renderHeaderContent(title)}</HeroHeader>
+        {renderHeaderContent(title)}
+
         {textContent && (
           <TextContainer>
             <Text>{textContent}</Text>
